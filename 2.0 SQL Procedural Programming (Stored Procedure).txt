@@ -1,0 +1,46 @@
+CREATE PROCEDURE sp_dad ( StartDate datetime year to second, EndDate datetime year to second)
+
+DROP TABLE IF EXISTS temp_sp_dad_7;
+DROP TABLE IF EXISTS temp_sp_dad_8;
+
+create TEMP TABLE temp_sp_dad_7
+(
+ create_datetime datetime year to second
+);
+
+WHILE StartDate < EndDate
+ INSERT INTO temp_sp_dad_7 (create_datetime ) VALUES (StartDate);
+LET StartDatE = EXTEND(StartDate, YEAR TO second) + 1 UNITS DAY;
+END WHILE;
+
+create TEMP TABLE temp_sp_dad_8
+(
+	plant_name nvarchar(255),
+   	plant_id integer,
+	status_id integer,
+	rev_no nvarchar(255),
+	unit nvarchar(255),
+	fuel_type nvarchar(255),
+	start_datetime datetime year to second,
+	end_datetime datetime year to second,
+	Declare_Capacity decimal(32,16),
+	Min_Gen decimal(32,16),
+	SynCond_Availability nvarchar(255),
+	Preferable_Dispatch_Order decimal(32,16),
+	Fuel_Cover nvarchar(255),
+	Remark nvarchar(255),
+	Usable_Stock_at_Yard_Tons decimal(32,16),
+	Distillate_Stock decimal(32,16),
+	No_of_Days_Available_on_Distillate decimal(32,16),
+	MFO_Stock decimal(32,16),
+	No_of_Days_Available_on_MFO decimal(32,16),
+	Reservoir_Water_Level  decimal(32,16)
+);
+
+
+INSERT INTO temp_sp_dad_8 ( plant_name,unit,start_datetime,Declare_capacity )  SELECT ebs6_reports_db@ol_informix1210:dad_plant.plant_name ,ebs6_reports_db@ol_informix1210:dad_plant.unit, temp_sp_dad_7.create_datetime, 
+
+(select declare_capacity from (select first 1 declare_capacity from ebs6_reports_db@ol_informix1210:vw_dad  where  dad_plant.plant_name=ebs6_reports_db@ol_informix1210:vw_dad.plant_name and dad_plant.unit= ebs6_reports_db@ol_informix1210:vw_dad.unit and temp_sp_dad_7.create_datetime<=ebs6_reports_db@ol_informix1210:vw_dad.start_datetime order by start_datetime desc))  FROM ebs6_reports_db@ol_informix1210:dad_plant CROSS JOIN temp_sp_dad_7;
+
+
+END PROCEDURE;
